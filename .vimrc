@@ -1,7 +1,10 @@
 set nocompatible              " be iMproved, required
 filetype off                  " required
+filetype plugin indent on
 
 call plug#begin('~/.vim/plugged')
+  Plug 'nathanaelkane/vim-indent-guides'
+  Plug 'scrooloose/syntastic'  
   Plug 'Shougo/unite-outline'
   Plug 'Shougo/unite-session'
   Plug 'Shougo/unite.vim'
@@ -13,11 +16,10 @@ call plug#begin('~/.vim/plugged')
   Plug 'mxw/vim-jsx'
   Plug 'ntpeters/vim-better-whitespace'
   Plug 'pangloss/vim-javascript'
-  Plug 'rstacruz/vim-opinion' " More sensible defaults
+  Plug 'tpope/vim-sensible'
   Plug 'sgur/unite-qf'
   Plug 'tomtom/tComment_vim'
   Plug 'tpope/vim-fugitive'
-  Plug 'tpope/vim-sensible' " Sensible defaults
   Plug 'tpope/vim-surround'
   Plug 'tsukkee/unite-help'
   Plug 'vim-airline/vim-airline'
@@ -34,13 +36,11 @@ call plug#begin('~/.vim/plugged')
   Plug 'tmhedberg/matchit'
   Plug 'justinmk/vim-sneak'
   Plug 'tommcdo/vim-exchange'
-  "  Plug 'bkad/CamelCaseMotion'
   Plug 'Konfekt/FastFold'
   Plug 'thinca/vim-textobj-function-javascript'
   Plug 'rhysd/vim-textobj-anyblock'
   Plug 'Chiel92/vim-autoformat'
   Plug 'mileszs/ack.vim'
-  "  Plug 'mgamba/j-split'
   Plug 'whatyouhide/vim-textobj-xmlattr'
   Plug 'andrewradev/splitjoin.vim'
   Plug 'lambdalisue/unite-grep-vcs'
@@ -49,16 +49,14 @@ call plug#begin('~/.vim/plugged')
   Plug 'Shougo/deoplete.nvim'
   Plug 'carlitux/deoplete-ternjs'
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
-  "  Plug 'benekastah/neomake'
   Plug 'morhetz/gruvbox'
   Plug 'elzr/vim-json'
   Plug 'junegunn/vim-easy-align'
-  "  Plug 'garbas/vim-snipmate'
-  "  Plug 'honza/vim-snippets'
-  "  Plug 'MarcWeber/vim-addon-mw-utils'
-  " Plug 'Valloric/YouCompleteMe', { 'do': 'cd ~/.config/nvim/plugged/YouCompleteMe && git submodule update --init --recursive && python2 install.py'  }
+  Plug 'tpope/vim-sleuth'
+  Plug 'groenewege/vim-less'
+  Plug 'Slava/vim-spacebars'
+  Plug 'djoshea/vim-autoread'
 call plug#end()
-
 " Start interactive EasyAlign in visual mode (e.g. vipga)
 xmap ga <Plug>(EasyAlign)
 
@@ -80,15 +78,20 @@ autocmd InsertLeave * set nopaste
 autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
+autocmd FileType c,cpp,java,php,jsx,js,javascript,less,sass,css,json,txt,md autocmd BufWritePre <buffer> :%s/\s\+$//e
+
 " Unite default sort order
 call unite#filters#sorter_default#use(['sorter_length'])
 
 " Fold settings
-set foldmethod=syntax
 autocmd BufRead,BufNewFile *.css,*.scss,*.less setlocal foldmethod=marker foldmarker={,}
 set fillchars+=vert: 
 
 set shell=/bin/bash
+" set noai
+
+" Don't mind when changing buffer if its unsaved and modified
+set hidden
 
 let NERDSpaceDelims=1
 set runtimepath^=~/.vim/bundle/ctrlp.vim
@@ -118,7 +121,7 @@ if exists('g:plugs["tern_for_vim"]')
 endif
 
 let g:deoplete#auto_complete_start_length = 1
-let g:jsx_ext_required = 0
+" let g:jsx_ext_required = 0
 
 " tern
 autocmd FileType javascript nnoremap <silent> <buffer> gb :TernDef<CR>
@@ -169,6 +172,7 @@ vnoremap ° :g/^/norm
 map ® :set rnu!<cr>
 map › <ESC>bi
 imap ƒ <ESC><Right>wi
+nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 
 " Remap non-breaking space char to normal space
 imap   <SPACE>
@@ -186,16 +190,24 @@ inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <expr> <Cr> pumvisible() ? "\<C-y>" : "\<Cr>"
 
-" " deoplete tab-complete
-" inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : deoplete#mappings#manual_complete()
-" " ,<Tab> for regular tab
-" inoremap <Leader><Tab> <Space><Space>
-" "
+nnoremap <C-s><C-f> :CtrlSF 
+nnoremap ı :IndentGuidesToggle<CR>
+
+" Better manual indent
+vnoremap < <gv
+vnoremap > >gv
+
+vnoremap <Tab> >gv
+vnoremap <S-Tab> <gv
+
+nnoremap ø i<CR><ESC>
+
+let g:vim_json_syntax_conceal = 0
 let g:airline#extensions#tabline#enabled = 1
 let g:NERDTreeQuitOnOpen=1
 let g:tex_fold_enabled=1
 let g:vimsyn_folding='af'
-let g:xml_syntax_folding = 1
+" let g:xml_syntax_folding = 1
 let g:php_folding = 1
 let g:perl_fold = 1
 let g:goldenview__enable_default_mapping=0
@@ -213,3 +225,78 @@ let g:tern_request_timeout = 1
 let g:tern_show_signature_in_pum = 0
 
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+
+" Disable greedy pattern matching default
+set nogdefault
+set nogd
+
+" Update automatically files that have changed (and not modified)
+set autoread
+
+" Show line numbers
+set number
+
+"
+" Folding
+"
+
+set foldmethod=syntax           "fdm:   fold by the indentation by default
+set foldnestmax=10              "fdn:   deepest fold is 10 levels
+set nofoldenable                "nofen: don't fold by default
+set foldlevel=1
+
+"
+" Search
+"
+
+set incsearch                   "is:    automatically begins searching as you type
+set hlsearch                    "hls:   highlights search results; ctrl-n or :noh to unhighlight
+
+"
+" Programming
+"
+
+syntax on                       "syn:   syntax highlighting
+set showmatch                   "sm:    flashes matching brackets or parenthasis
+set matchtime=3                 "mat:   How long to flash brackets
+
+"
+" Tabs
+"
+
+set tabstop=2                   "ts:    number of spaces that a tab renders as
+set shiftwidth=2                "sw:    number of spaces to use for autoindent
+set softtabstop=2               "sts:   number of spaces that tabs insert
+set smarttab                    "sta:   helps with backspacing because of expandtab
+set expandtab                   "et:    uses spaces instead of tab characters
+
+" Syntastic
+"
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_loc_list_height = 5
+let g:syntastic_auto_loc_list = 0
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 1
+let g:syntastic_javascript_checkers = ['eslint']
+
+let g:syntastic_error_symbol = '❌'
+let g:syntastic_style_error_symbol = '⁉️'
+let g:syntastic_warning_symbol = '⚠️'
+let g:syntastic_style_warning_symbol = '💩'
+
+highlight link SyntasticErrorSign SignColumn
+highlight link SyntasticWarningSign SignColumn
+highlight link SyntasticStyleErrorSign SignColumn
+highlight link SyntasticStyleWarningSign SignColumn
+autocmd FileType javascript,jsx let b:syntastic_checkers = findfile('.eslintrc', '.;') != '' ? ['eslint'] : ['standard']
+
+" Show cursorline on insert mode
+augroup CursorLine
+  au!
+  au InsertEnter * setlocal cursorline
+  au InsertLeave * setlocal nocursorline
+augroup END
